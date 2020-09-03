@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+    <title>简易计算器,用计算属性</title>
+</head>
+<body>
+    <div id='app'>
+        <input type="text" v-model="num1">
+
+
+        <select v-model ="sep" >
+
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+        <input type="text" v-model="num2" @keyup.enter="calc1">
+        <button @click="calc1">计算</button>
+        <h5>计算结果为：{{result}}</h5>
+    </div>
+    <script src='https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js'></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data:{
+                num1:"",
+                num2:"",
+                sep:"+",
+                result:""
+              },
+            methods:{
+                calc()
+                {
+                    if(this.sep =="+")
+                {
+                    this.result=parseFloat(this.num1)+parseFloat(this.num2)
+
+                }
+                else     if(this.sep =="-")
+                {
+                    this.result=parseFloat(this.num1)-parseFloat(this.num2)
+
+                }else     if(this.sep =="*")
+                {
+                    this.result=parseFloat(this.num1)*parseFloat(this.num2)
+
+                }
+                else 
+                {
+                    this.result=parseFloat(this.num1)/parseFloat(this.num2)
+
+                }
+                }
+            },
+            computed: {
+                // 直接当做普通属性调用不加括号
+                // 任何data中数据变化立即重新计算
+                // 计算属性会缓存
+                calc1()
+                {
+                    if(this.sep =="+")
+                {
+                   return this.result=parseFloat(this.num1)+parseFloat(this.num2)
+
+                }
+                else  if(this.sep =="-")
+                {
+                    return this.result=parseFloat(this.num1)-parseFloat(this.num2)
+
+                }else if(this.sep =="*")
+                {
+                    return this.result=parseFloat(this.num1)*parseFloat(this.num2)
+
+                }
+                else 
+                {
+                    return  this.result=parseFloat(this.num1)/parseFloat(this.num2)
+
+                }
+                }
+            
+                
+                // return 必须retrun结果
+            },
+        })
+    </script>
+</body>
+</html>
