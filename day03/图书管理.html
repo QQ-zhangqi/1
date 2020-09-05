@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <style type="text/css">
+        .grid {
+            margin: auto;
+            width: 530px;
+            text-align: center;
+        }
+
+        .grid table {
+            border-top: 1px solid #C2D89A;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grid th,
+        td {
+            padding: 10;
+            border: 1px dashed #F3DCAB;
+            height: 35px;
+            line-height: 35px;
+        }
+
+        .grid th {
+            background-color: #F3DCAB;
+        }
+
+        .grid .book {
+            padding-bottom: 10px;
+            padding-top: 5px;
+            background-color: #F3DCAB;
+        }
+
+        .grid .total {
+            height: 30px;
+            line-height: 30px;
+            background-color: #F3DCAB;
+            border-top: 1px solid #C2D89A;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="grid">
+            <div>
+                <h1>图书管理</h1>
+                <div class="book">
+                    <div>
+                        <label for="id"> 编号： </label>
+                        <input disabled type="text" id="id" v-model="id" />
+                        <label for="name"> 名称： </label>
+                        <input type="text" id="name" v-model="name" v-focus />
+                        <button @click="addBook" :disabled="isAbled">提交</button>
+                    </div>
+                </div>
+            </div>
+            <div class="total"><span>图书总数：</span> <span>{{count}}</span></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>名称</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr :key="item.id" v-for="(item,index) in books">
+                        <td>{{item.id}}</td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.date|formdata("yyyy-MM")}}</td>
+                        <td>
+                            <a href="" @click.prevent="editBook(item.id)">修改</a>
+                            <span>|</span>
+                            <a href="#" @click.prevent="delBook(item.id)">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+    <script>
+        //   自定义指令：
+        Vue.directive("focus",{
+            inserted(val)
+            {
+                   val.focus();
+            }
+
+        })
+        // 过滤器：
+        Vue.filter("formdata",function (value, arg) 
+        {
+            function dateFormat(date, format) {
+                if (typeof date === "string") {
+                    var mts = date.match(/(\/Date\((\d+)\)\/)/);
+                    if (mts && mts.length >= 3) {
+                        date = parseInt(mts[2]);
+                    }
+                }
+                date = new Date(date);
+                if (!date || date.toUTCString() == "Invalid Date") {
+                    return "";
+                }
+                var map =
+                {
+                    "M": date.getMonth() + 1, //月份 
+                    "d": date.getDate(), //日 
+                    "h": date.getHours(), //小时 
+                    "m": date.getMinutes(), //分 
+                    "s": date.getSeconds(), //秒 
+                    "q": Math.floor((date.getMonth() + 3) / 3), //季度 
+                    "S": date.getMilliseconds() //毫秒 
+                };
+                format = format.replace(/([yMdhmsqS])+/g, function (all, t) {
+                    var v = map[t];
+                    if (v !== undefined) {
+                        if (all.length > 1) {
+                            v = '0' + v;
+                            v = v.substr(v.length - 2);
+                        }
+                        return v;
+                    } else if (t === 'y') {
+                        return (date.getFullYear() + '').substr(4 - all.length);
+                    }
+                    return all;
+                });
+                return format;
+            }
+            return dateFormat(value, arg);
+        })
+        new Vue({
+            el: "#app",
+            data:
+            {
+                isEdit: false,
+                isAbled:false,
+                books: []
+                , id: "",
+                name: "",
+            },
+            // 侦听器
+            watch:
+            {
+                name(val)
+                {
+                   this.isAbled =  this.books.some((value) => 
+                    {
+                        return value.name==val;
+                    })
+
+                }
+
+
+            },
+            methods:
+            {
+                addBook() {
+                    if (!this.name) return;
+                    if (!this.isEdit) 
+                    {
+                        this.books.push(
+                            {
+                                id: this.books.length ? this.books[this.books.length - 1].id + 1 : 1,
+                                name: this.name,
+                                date: +new Date(),
+
+                            });
+
+                        this.id = '';
+                        this.name = "";
+                    }
+                    else 
+                    {
+
+                        this.books.some((item)=>
+                        {
+                            if(this.id ==item.id)
+                            {
+                               return  item.name=this.name;
+                            } 
+                        })
+
+                    }
+
+                }
+                , delBook(id) {
+                    // 方法一：
+                    //    this.books = this.books.filter((item)=>
+                    //     {
+                    //      return item.id!=id;
+                    //     })
+                    // 方法二：
+                    var index = this.books.findIndex((item) => {
+                        return item.id = id;
+                    });
+                    this.books.splice(index, 1);
+
+
+                },
+                editBook(id) {
+                    this.isEdit = true;
+                    var index = this.books.findIndex((item) => {
+                        return item.id == id
+                    })
+                    // console.log(index);
+                    this.id = this.books[index].id;
+                    this.name = this.books[index].name;
+                }
+            },
+            // 计算属性
+            computed:
+            {
+                count()
+                {
+                    return this.books.length;
+                }
+                
+            },
+            // data和methods数据初始
+            created()
+            {
+                var data = 
+                [{
+                        id: 1,
+                        name: '三国演义',
+                        date: 2525609975000
+                    }, {
+                        id: 2,
+                        name: '水浒传',
+                        date: 2525609975000
+                    }, {
+                        id: 3,
+                        name: '红楼梦',
+                        date: 2525609975000
+                    }, {
+                        id: 4,
+                        name: '西游记',
+                        date: 2525609975000
+                    }];
+                    this.books = data;
+
+            }
+        });
+    </script>
+</body>
+
+</html>
+<script type="text/html">
+1、模拟后台拿到数据，把数据都渲染到<tbody></tbody>标签内;
+2、添加功能，v-model name，id ID值的输入框，并在提交按钮中绑定点击事件,并定义addBook函数；让数据的id为最后一个数据的id值再加1;
+3、删除功能，给删除的<a href="#"></a>,添加点击事件，并处理函数(1、books数组的filter函数（不会更新原数组）找到传递过来的匹配过来的id值的不等于data中的id和name，结果赋值给books数组，达到删除效果；方法二：用findIndex()方法找到要删除的索引，再调用splice()函数)；
+4、编辑功能：给删除的<a href=""></a>,添加点击事件，并处理函数赋值给表单(可用filter和findIndex这里就讲述findIndex),date中定义个isEdit参数，当点编辑开始这个参数，执行编辑提交功能：使用some（）函数遍历数组找到符合的id数据并将对应的name值更新成this.name,执行完成后关闭isEdit也就是置为false
+
+
+
+
+</script>
